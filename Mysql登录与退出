@@ -1,0 +1,13 @@
+-D，打开指定数据库
+--delimiter=name,指定分隔符
+-h,服务器名称
+-p,密码
+-P，端口号
+--prompt=name,设置提示符
+-u，用户名
+-V,输出版本信息并且退出
+
+Mysql退出
+exit;
+quit;
+\q;
