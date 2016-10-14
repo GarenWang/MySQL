@@ -24,3 +24,10 @@ alter database t2 character set = utf8;
 
 删除数据库
 drop database t1;
+
+查看数据表
+show tables;
+show tables from mysql; --查看mysql数据库中的数据表列表
+
+查看数据表结构
+show columns from tb1;
