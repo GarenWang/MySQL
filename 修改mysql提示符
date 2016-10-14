@@ -1,0 +1,5 @@
+mysql -uxxx -pxxx --prompt \h 修改mysql提示符为当前主机名，即将“mysql>”替换为“hostname”
+\D,完整的日期
+\d,当前数据库
+\h,服务器名称
+\u,当前用户
