@@ -1,0 +1,8 @@
+显示当前数据库服务器版本
+select version();
+
+显示当前日期时间
+select now();
+
+显示当前用户
+select user();
