@@ -6,3 +6,21 @@ select now();
 
 显示当前用户
 select user();
+
+显示所有数据库
+show databases;
+
+产看警告信息
+show warnings;
+
+查看数据库使用的字符集类型
+show create database t1;
+
+创建数据库同时指定使用的字符集
+create database if not exists t2 character set gbk;
+
+修改数据库字符集
+alter database t2 character set = utf8;
+
+删除数据库
+drop database t1;
