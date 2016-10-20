@@ -1,0 +1,172 @@
+--清理系统自带的mysql
+# rpm -qa|grep -i mysql
+--如果存在需先删除
+# rpm -e libdbi-dbd-mysql-0.8.1a-1.2.2
+# rpm -e mysql-connector-odbc-3.51.26r1127-1.el5
+# rpm -e perl-DBD-MySQL-3.0007-2.el5
+# rpm -e MySQL-python-1.2.1-1
+# rpm -e mysql-server-5.0.77-3.el5 --noscripts
+# rpm -e --allmatches mysql-5.0.77-3.el5
+
+--二进制源码编译安装mysql
+# tar -zxvf mysql-5.1.58.tar.gz
+# cd mysql-5.1.58
+# ./configure --prefix=/opt/mysql --localstatedir=/opt/mysql/data --with-comment=Source --with-server-suffix=-enterprise-gpl --with-mysqld-user=mysql --without-debug --with-big-tables --with-charset=utf8 --with-collation=utf8_general_ci --with-extra-charsets=all --with-pthread --enable-static --enable-thread-safe-client --with-client-ldflags=-all-static --with-mysqld-ldflags=-all-static --enable-assembler --without-ndb-debug --with-unix-socket-path=/opt/mysql/tmp/mysql.sock --with-plugins=all
+# make
+# make install
+# cd support-files
+# cp my-large.cnf /opt/mysql/my.cnf
+# groupadd mysql
+# useradd -g mysql mysql
+# passwd mysql
+# cd /opt/mysql/bin
+# ./mysql_install_db --user=mysql
+---------------------------------------------------------------------
+Installing MySQL system tables...
+OK
+Filling help tables...
+OK
+
+To start mysqld at boot time you have to copy
+support-files/mysql.server to the right place for your system
+
+PLEASE REMEMBER TO SET A PASSWORD FOR THE MySQL root USER !
+To do so, start the server, then issue the following commands:
+
+/usr/local/mysql/bin/mysqladmin -u root password 'new-password'
+/usr/local/mysql/bin/mysqladmin -u root -h localhost.localdomain password 'new-password'
+
+Alternatively you can run:
+/usr/local/mysql/bin/mysql_secure_installation
+
+which will also give you the option of removing the test
+databases and anonymous user created by default.  This is
+strongly recommended for production servers.
+
+See the manual for more instructions.
+
+You can start the MySQL daemon with:
+cd /usr/local/mysql ; /usr/local/mysql/bin/mysqld_safe &
+
+You can test the MySQL daemon with mysql-test-run.pl
+cd /usr/local/mysql/mysql-test ; perl mysql-test-run.pl
+
+Please report any problems with the /usr/local/mysql/bin/mysqlbug script!
+---------------------------------------------------------------------
+# chown -R mysql:mysql /opt/mysql
+# cp /opt/mysql/share/mysql/mysql.server /etc/rc.d/init.d/mysqld
+# chmod 755 /etc/rc.d/init.d/mysqld
+# chkconfig --add mysqld  (注册系统服务)
+# su - mysql
+$ vi .bash_profile
+---------------------------------------------------------------------
+# .bash_profile
+
+# Get the aliases and functions
+if [ -f ~/.bashrc ]; then
+        . ~/.bashrc
+fi
+
+# User specific environment and startup programs
+
+PATH=/opt/mysql/bin:$PATH:$HOME/bin
+
+export PATH
+unset USERNAME
+---------------------------------------------------------------------
+$ . .bash_profile
+$ vi /opt/mysql/my.cnf
+---------------------------------------------------------------------
+[mysqld]
+port            = 3306
+socket          = /usr/local/mysql/tmp/mysql.sock
+skip-locking
+key_buffer_size = 256M
+max_allowed_packet = 1M
+table_open_cache = 256
+sort_buffer_size = 1M
+read_buffer_size = 1M
+read_rnd_buffer_size = 4M
+myisam_sort_buffer_size = 64M
+thread_cache_size = 8
+query_cache_size= 16M
+# Try number of CPU's*2 for thread_concurrency
+thread_concurrency = 8
+lower_case_table_names=1
+default-table-type=innodb
+
+--优化
+innodb_buffer_pool_size = 256M
+innodb_additional_mem_pool_size = 20M
+
+innodb_flush_log_at_trx_commit = 1
+innodb_lock_wait_timeout = 50
+
+---------------------------------------------------------------------
+$ /etc/init.d/mysqld start
+$ mysqladmin -u root password "password_for_root"
+$ mysql -u root -p
+
+
+
+
+
+脚本安装
+mysql.sh
+#!/bin/bash
+#setup firewall and selinux
+service iptables stop && service iptables save
+setenforce 0
+sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
+
+
+rpm -qa|grep -i mysql > packages
+for pkgs in packages
+do
+rpm -e pkgs --nodeps
+done
+
+#installing mysql--------------------------------------------------------------------------------------------------
+tar -zxvf mysql-5.1.73.tar.gz
+cd mysql-5.1.73
+./configure --prefix=/opt/mysql --localstatedir=/opt/mysql/data --with-comment=Source --with-server-suffix=-enterprise-gpl --with-mysqld-user=mysql --without-debug --with-big-tables --with-charset=utf8 --with-collation=utf8_general_ci --with-extra-charsets=all --with-pthread --enable-static --enable-thread-safe-client --with-client-ldflags=-all-static --with-mysqld-ldflags=-all-static --enable-assembler --without-ndb-debug --with-unix-socket-path=/opt/mysql/tmp/mysql.sock --with-plugins=all
+make
+make install
+
+cd /home/softwarebys/mysql-5.1.73
+cd support-files
+cp my-large.cnf /opt/mysql/my.cnf
+groupadd mysql
+useradd -g mysql mysql
+echo root2014 | passwd --stdin mysql
+cd /opt/mysql/bin
+./mysql_install_db --user=mysql
+chown -R mysql:mysql /opt/mysql
+cp /opt/mysql/share/mysql/mysql.server /etc/rc.d/init.d/mysqld
+chmod 755 /etc/rc.d/init.d/mysqld
+chkconfig --add mysqld
+
+
+> /var/lib/mysql/.bash_profile
+cat << EOF > /var/lib/mysql/.bash_profile
+# Get the aliases and functions
+if [ -f ~/.bashrc ]; then
+        . ~/.bashrc
+fi
+# User specific environment and startup programs
+PATH=/opt/mysql/bin:$PATH:$HOME/bin
+export PATH
+unset USERNAME
+EOF
+source /var/lib/mysql/.bash_profile
+
+
+cp -f /home/softwarebys/my.cnf.useful /opt/mysql/my.cnf
+/etc/init.d/mysqld start
+mysqladmin -u root password "root2014"
+
+mysql -uroot -proot2014 << EOF
+create database cms;
+exit
+EOF
+mysql -uroot -proot2014 --database cms < /home/softwarebys/cms_final_20140918.dmp 
