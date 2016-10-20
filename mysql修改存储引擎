@@ -1,0 +1,11 @@
+*通过修改Mysql配置文件实现
+-default-storage-engine=engine
+
+*通过创建数据表命令实现
+-create teble table_name(
+...
+...
+)ENGINE=engine
+
+*通过修改数据表命令实现
+-alter table table_name ENGINE [=] engine_name;
