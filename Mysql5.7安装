@@ -1,1 +1,15 @@
+和安装mysql5.1的区别在于
+使用cmake代替./configure
+初始化使用bin/mysqld --initialize --user=mysql，可以同时指定配置文件--defaults-file=配置文件路径
 
+
+
+参考：
+mysql 5.7.9 Linux安装 - tanweii163的专栏 - 博客频道 - CSDN.NET
+http://blog.csdn.net/tanweii163/article/details/50101591
+
+Mysql 5.7.11源码安装方法 - A-380 - 博客园
+http://www.cnblogs.com/xiangshui/p/5194990.html
+
+MySQL 5.7 编译安装 - Linux技术博客
+http://www.goingup.cn/?post=52
